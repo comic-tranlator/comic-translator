@@ -1,0 +1,32 @@
+style_extractor:
+  StyleExtractor:
+    model:
+      StyleNet:
+        backbone: efficientnetv2_rw_s
+        head:
+          StyleNetHead:
+            partial: true
+            dropout: 0.3
+    checkpoint: checkpoints/epoch=9_val_loss=0.0305.ckpt
+    transforms:
+      - Albumentations:
+          image_keys: [image]
+          transforms:
+            - albumentations.LongestMaxSize:
+                max_size: 224
+            - albumentations.PadIfNeeded:
+                min_height: 224
+                min_width: 224
+                border_mode: 0
+
+      - Normalize:
+          keys: [image]
+          mean: [0.485, 0.456, 0.406]
+          std: [0.229, 0.224, 0.225]
+
+      - ToTensor:
+          keys: [image]
+          scale: true
+          dtype: float
+
+device: cuda

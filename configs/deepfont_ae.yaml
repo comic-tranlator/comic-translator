@@ -1,0 +1,116 @@
+epochs: 100
+
+model:
+  DeepFontAutoencoder
+
+loss:
+  torch.nn.MSELoss
+
+optimizer:
+  torch.optim.AdamW:
+    lr: 0.0003
+    weight_decay: 0.0001
+
+train_loader:
+  batch_size: 32
+  shuffle: true
+  num_workers: 8
+  drop_last: false
+  pin_memory: true
+  dataset:
+    BasicDataset:
+      loader:
+        ComicStyleLoader:
+          root: dataset/ja
+          train: true
+
+      input_shape: image
+      target_shape: image
+
+      transforms:
+        - ToGrayscale:
+            keys: [image]
+
+        - ScaleToHeight:
+            keys: [image]
+            target_height: 105
+
+        - Albumentations:
+            image_keys: [image]
+            transforms:
+              - albumentations.GaussNoise:
+                  std_range: [0.0118, 0.0157]
+                  p: 0.5
+              - albumentations.GaussianBlur:
+                  blur_limit: [1, 3]
+                  p: 0.5
+              - albumentations.Affine:
+                  rotate: [-3, 3]
+                  p: 0.5
+              - albumentations.MultiplicativeNoise:
+                  multiplier: [0.3, 0.8]
+                  p: 0.5
+
+        - VariableAspectRatio:
+            keys: [image]
+            ratio_range: [0.83, 1.17]
+
+        - ForceAspectRatio:
+            keys: [image]
+            ratio: 2.5
+
+        - RandomPatchCrop:
+            keys: [image]
+            patch_size: [105, 105]
+
+        - ToTensor:
+            keys: [image]
+            scale: True
+            dtype: float
+
+val_loader:
+  batch_size: 1
+  shuffle: false
+  num_workers: 2
+  drop_last: false
+  pin_memory: true
+  dataset:
+    BasicDataset:
+      loader:
+        ComicStyleLoader:
+          root: dataset/ja
+          train: false
+
+      input_shape: image
+      target_shape: image
+
+      transforms:
+        - ToGrayscale:
+            keys: [image]
+
+        - ScaleToHeight:
+            keys: [image]
+            target_height: 105
+
+        - ForceAspectRatio:
+            keys: [image]
+            ratio: 2.5
+
+        - RandomPatchCrop:
+            keys: [image]
+            patch_size: [105, 105]
+            use_grid_sampling: true
+
+        - ToTensor:
+            keys: [image]
+            scale: True
+            dtype: float
+
+callbacks:
+  - MetricsCallback
+  - ProgressCallback
+  - CheckpointCallback:
+      dirpath: checkpoints/deepfont/ja/autoencoder
+      monitor: val_loss
+      mode: min
+      top_k: 3

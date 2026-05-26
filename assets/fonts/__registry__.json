@@ -1,0 +1,58 @@
+{
+    "AnimeAce": {
+        "file": "animeace.otf",
+        "typeface": "script",
+        "weight": "regular",
+        "posture": "roman",
+        "langs": ["en", "ru"]
+    },
+    "BadaBoom": {
+        "file": "badaboom.ttf",
+        "typeface": "sans-serif",
+        "weight": "black",
+        "posture": "italic",
+        "langs": ["en", "ru"]
+    },
+    "Sporefunk": {
+        "file": "sporefunk.ttf",
+        "typeface": "script",
+        "weight": "thin",
+        "posture": "roman",
+        "langs": ["en", "ja"]
+    },
+    "ZarameGothic": {
+        "file": "zaramegothic.ttf",
+        "typeface": "sans-serif",
+        "weight": "bold",
+        "posture": "roman",
+        "langs": ["en", "ja"]
+    },
+    "ZekkyouBolero": {
+        "file": "zekkyoubolero.ttf",
+        "typeface": "sans-serif",
+        "weight": "regular",
+        "posture": "roman",
+        "langs": ["en", "ja"]
+    },
+    "KeyJi": {
+        "file": "keiji.ttf",
+        "typeface": "script",
+        "weight": "thin",
+        "posture": "roman",
+        "langs": ["en", "ja", "ru"]
+    },
+    "AprilGothicOne": {
+        "file": "aprilgothicone.ttf",
+        "typeface": "sans-serif",
+        "weight": "black",
+        "posture": "italic",
+        "langs": ["en", "ja", "ru"]
+    },
+    "GenEiKiwamiGo": {
+        "file": "geneikiwamigo.ttf",
+        "typeface": "sans-serif",
+        "weight": "black",
+        "posture": "roman",
+        "langs": ["en", "ja", "ru"]
+    }
+}

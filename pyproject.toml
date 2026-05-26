@@ -1,0 +1,62 @@
+[project]
+name = "comic-translator"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "accelerate>=1.13.0",
+    "albumentations>=2.0.8",
+    "click>=8.4.1",
+    "easyocr>=1.7.2",
+    "kornia>=0.8.3",
+    "langchain>=1.3.1",
+    "langchain-mistralai>=1.1.4",
+    "matplotlib>=3.10.9",
+    "numba>=0.65.1",
+    "opencv-python>=4.13.0.92",
+    "paddleocr[all]==3.2.0",
+    "paddlepaddle",
+    "pdf2image>=1.17.0",
+    "pictex>=2.3.0",
+    "pyyaml>=6.0.2",
+    "rembg[cpu]>=2.0.75",
+    "scikit-learn>=1.8.0",
+    "tensorboard>=2.20.0",
+    "timm>=1.0.27",
+    "torch>=2.12.0",
+    "torchvision>=0.27.0",
+    "tqdm>=4.67.3",
+    "transformers>=5.9.0",
+]
+
+[project.scripts]
+cli = "src.cli:cli"
+
+[tool.uv.sources]
+torch = [
+    { index = "pytorch-cu130", marker = "sys_platform == 'linux' or sys_platform == 'win32'" }
+]
+torchvision = [
+    { index = "pytorch-cu130", marker = "sys_platform == 'linux' or sys_platform == 'win32'" }
+]
+
+paddlepaddle = { index = "paddlepaddle-cpu" }
+
+[[tool.uv.index]]
+name = "pytorch-cu130"
+url = "https://download.pytorch.org/whl/cu130"
+explicit = true
+
+[[tool.uv.index]]
+name = "paddlepaddle-cpu"
+url = "https://www.paddlepaddle.org.cn/packages/stable/cpu/"
+explicit = true
+
+[build-system]
+requires = ["uv_build>=0.10.0,<0.11.0"]
+build-backend = "uv_build"
+
+[tool.uv.build-backend]
+module-name = "src"
+module-root = "."

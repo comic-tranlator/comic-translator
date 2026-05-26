@@ -1,0 +1,118 @@
+epochs: 100
+
+model:
+  FontNet
+
+loss:
+  FontNetLoss
+
+optimizer:
+  torch.optim.Adam:
+    lr: 0.0003
+
+train_loader:
+  batch_size: 64
+  shuffle: true
+  num_workers: 12
+  drop_last: false
+  pin_memory: true
+  dataset:
+    BasicDataset:
+      loader:
+        FontDatasetLoader:
+          root: dataset
+          train: true
+
+      input_shape: image
+      target_shape:
+        typeface: typeface
+        weight: weight
+        posture: posture
+
+      transforms:
+        - Albumentations:
+            image_keys: [image]
+            transforms:
+              - albumentations.PadIfNeeded:
+                  min_height: 64
+                  min_width: 64
+              - albumentations.RandomCrop:
+                  width: 64
+                  height: 64
+              - albumentations.Resize:
+                  width: 224
+                  height: 224
+              - albumentations.Affine:
+                  rotate: [-3, 3]
+                  p: 0.5
+
+        - Resize:
+            keys: [image]
+            w: 224
+            h: 224
+
+        - Normalize:
+            keys: [image]
+            mean: [0.485, 0.456, 0.406]
+            std: [0.229, 0.224, 0.225]
+
+        - ToTensor:
+            keys: [image]
+            scale: True
+            dtype: float
+
+        - PrepareFontAttributes
+
+val_loader:
+  batch_size: 1
+  shuffle: false
+  num_workers: 2
+  drop_last: false
+  pin_memory: true
+  dataset:
+    BasicDataset:
+      loader:
+        FontDatasetLoader:
+          root: dataset
+          train: false
+
+      input_shape: image
+      target_shape:
+        typeface: typeface
+        weight: weight
+        posture: posture
+
+      transforms:
+        - Albumentations:
+            image_keys: [image]
+            transforms:
+              - albumentations.PadIfNeeded:
+                  min_height: 64
+                  min_width: 64
+              - albumentations.RandomCrop:
+                  width: 64
+                  height: 64
+              - albumentations.Resize:
+                  width: 224
+                  height: 224
+
+        - Normalize:
+            keys: [image]
+            mean: [0.485, 0.456, 0.406]
+            std: [0.229, 0.224, 0.225]
+
+        - ToTensor:
+            keys: [image]
+            scale: True
+            dtype: float
+
+        - PrepareFontAttributes
+
+callbacks:
+  - MetricsCallback
+  - ProgressCallback
+  - CheckpointCallback:
+      dirpath: checkpoints/font_net/
+      monitor: val_loss
+      mode: min
+      top_k: 3

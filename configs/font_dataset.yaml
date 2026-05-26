@@ -1,0 +1,18 @@
+generator:
+  FontDatasetGenerator:
+    min_font_size: 24
+    max_font_size: 48
+    backgrounds_dir: assets/backgrounds
+
+    min_margin: 20
+    max_margin: 40
+    rotation_offset: 30
+    max_chars_per_line: 1000
+    max_phrase_length: 3
+    min_color_contrast: 75
+    stroke_thickness: 8
+    expansion: 64
+    seed: 42
+
+split: 0.9
+output: dataset-lines/
