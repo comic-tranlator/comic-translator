@@ -20,7 +20,7 @@ from src.util.path import CONFIG_DIR
 )
 def translate_cmd(file: Path, source: str, target: str, output: Path):
     click.echo("Loading pages...")
-    pages = load_file(file)[:5]
+    pages = load_file(file)
     click.echo(f"Loaded {len(pages)} pages")
 
     config_raw = yaml.safe_load((CONFIG_DIR / "pipeline.yaml").read_text())

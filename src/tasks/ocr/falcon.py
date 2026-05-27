@@ -1,7 +1,11 @@
+import os
 from typing import Iterator
+
+os.environ["TORCHDYNAMO_RECOMPILE_LIMIT"] = "32"
 
 import numpy as np
 import torch
+from PIL import Image
 from transformers import AutoModelForCausalLM
 
 
@@ -16,7 +20,6 @@ class FalconOcr:
         )
 
     def __call__(self, images: list[np.ndarray]) -> Iterator[str]:
-        for i in range(0, len(images), self.batch_size):
-            batch = images[i : i + self.batch_size]
-            for pred in self.model.generate(batch, category="text"):  # type: ignore
-                yield pred
+        images_pil = [Image.fromarray(image) for image in images]
+        for pred in self.model.generate(images_pil, category="text"):  # type: ignore
+            yield pred

@@ -7,9 +7,11 @@
     set page(
         paper: "a4",
         footer: context {
-            set text(size: 12pt, fill: gray)
-            h(1fr)
-            counter(page).display("1")
+            if counter(page).get().first() > 1 {
+                set text(size: 12pt, fill: gray)
+                set align(right)
+                counter(page).display("1")
+            }
         },
     )
 
@@ -30,23 +32,18 @@
 
     // Headings
     set heading(
-
-      numbering: (..nums) => {
-        if nums.pos().len() == 1 {
-          none
-        } else {
-          "1."
-        }
-      }
-      )
+        numbering: "1.",
+    )
 
     show heading: set text(size: 14pt, weight: "regular")
-    show heading: block.with(above: 12pt, below: 6pt)
+    show heading: block.with(above: 18pt, below: 12pt)
     show heading.where(level: 1): it => block(width: 100%)[
         #set align(center)
         #upper()[#it]
     ]
     show table: set text(size: 12pt)
+
+    show figure.where(kind: image): set figure(supplement: [Рисунок])
 
     // Outline
     show outline.entry: it => {
@@ -60,6 +57,19 @@
     set list(
         marker: [•],
         indent: 1.7cm,
+    )
+
+    set enum(
+        indent: 1.7cm,
+    )
+
+    set math.equation(
+        numbering: "(1)",
+    )
+
+    show math.equation: set block(
+        above: 1.5em,
+        below: 1.5em,
     )
 
     // Code
@@ -86,5 +96,8 @@
         ]
     }
 
+    show ref: set ref(supplement: it => {
+        ""
+    })
     body
 }

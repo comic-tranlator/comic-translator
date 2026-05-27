@@ -13,12 +13,12 @@ class PaddleDetector:
     def __init__(
         self,
         limit_side_len: int = 1440,
-        det_model_name: str = "PP-OCRv5_mobile_det",
-        rec_model_name: str = "PP-OCRv5_mobile_rec",
+        model_name: str = "PP-OCRv5_mobile_det",
     ) -> None:
         self.limit_side_len = limit_side_len
 
         self.model = TextDetection(
+            model_name=model_name,
             limit_side_len=limit_side_len,
             limit_type="max",
             enable_mkldnn=False,

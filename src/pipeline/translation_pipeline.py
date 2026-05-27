@@ -8,7 +8,7 @@ from PIL import Image
 from src.factory import factory
 from src.tasks.detection import PaddleDetector
 from src.tasks.inpainting import LamaInpainter
-from src.tasks.ocr import FalconOcr
+from src.tasks.ocr import FalconOcr, MangaOcr
 from src.tasks.rendering import TextRenderer
 from src.tasks.translation import TranslationAgent
 from src.util import build_mask
@@ -23,8 +23,12 @@ class TranslationPipeline:
         self.device = torch.device(
             config.device if torch.cuda.is_available() else "cpu"
         )
+        print(self.device)
         self.detector = PaddleDetector()
-        self.ocr = FalconOcr(self.device)
+        if source_language.lower() == "japanese":
+            self.ocr = MangaOcr(self.device)
+        else:
+            self.ocr = FalconOcr(self.device)
         self.inpainter = LamaInpainter(self.device)
         self.style_extractor = factory.build(config.style_extractor, device=self.device)
         self.renderer = TextRenderer()
@@ -47,8 +51,6 @@ class TranslationPipeline:
 
             crops = [page[y1:y2, x1:x2] for x1, y1, x2, y2 in bboxes]
             styles = self.style_extractor(crops)
-
-            # OCR → translate → render
             texts = list(self.ocr(crops))
             translated_texts = self.translator(texts)
 
