@@ -20,6 +20,15 @@ class FalconOcr:
         )
 
     def __call__(self, images: list[np.ndarray]) -> Iterator[str]:
-        images_pil = [Image.fromarray(image) for image in images]
-        for pred in self.model.generate(images_pil, category="text"):  # type: ignore
-            yield pred
+        if not images:
+            return
+
+        with torch.inference_mode():
+            for start in range(0, len(images), self.batch_size):
+                batch = images[start : start + self.batch_size]
+                batch_pil = [Image.fromarray(image) for image in batch]
+                for pred in self.model.generate(batch_pil, category="text"):  # type: ignore
+                    yield pred
+
+                if torch.cuda.is_available():
+                    torch.cuda.empty_cache()

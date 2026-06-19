@@ -23,13 +23,12 @@ class TranslationPipeline:
         self.device = torch.device(
             config.device if torch.cuda.is_available() else "cpu"
         )
-        print(self.device)
         self.detector = PaddleDetector()
         if source_language.lower() == "japanese":
             self.ocr = MangaOcr(self.device)
         else:
             self.ocr = FalconOcr(self.device)
-        self.inpainter = LamaInpainter(self.device)
+        self.inpainter = LamaInpainter(self.device, batch_size=1)
         self.style_extractor = factory.build(config.style_extractor, device=self.device)
         self.renderer = TextRenderer()
         self.translator = TranslationAgent(
@@ -40,35 +39,31 @@ class TranslationPipeline:
         )
 
     def __call__(self, pages: list[np.ndarray]) -> Iterator[Image.Image]:
-        masks, pages_polys = self._build_masks(pages)
-        for idx, inpainted in enumerate(self.inpainter(pages, masks)):
-            page = pages[idx]
-            polys = pages_polys[idx]
-            bboxes = self._get_text_bboxes(page, polys)
-            if not bboxes:
-                yield Image.fromarray(inpainted).convert("RGBA")
-                continue
+        for page in pages:
+            yield self._process_page(page)
 
-            crops = [page[y1:y2, x1:x2] for x1, y1, x2, y2 in bboxes]
-            styles = self.style_extractor(crops)
-            texts = list(self.ocr(crops))
-            translated_texts = self.translator(texts)
+    def _process_page(self, page: np.ndarray) -> Image.Image:
+        mask, polys = self._build_mask(page)
+        inpainted = next(self.inpainter([page], [mask]))
+        bboxes = self._get_text_bboxes(page, polys)
+        if not bboxes:
+            return Image.fromarray(inpainted).convert("RGBA")
 
-            inpainted_pil = Image.fromarray(inpainted)
-            yield self.renderer.render_page(
-                inpainted_pil, bboxes, styles, translated_texts
-            )
+        crops = [page[y1:y2, x1:x2] for x1, y1, x2, y2 in bboxes]
+        styles = self.style_extractor(crops)
+        texts = list(self.ocr(crops))
+        translated_texts = self.translator(texts)
 
-    def _build_masks(
-        self, pages: list[np.ndarray]
-    ) -> tuple[list[np.ndarray], list[list[np.ndarray]]]:
-        masks, pages_polys = [], []
-        for page_polys, page in zip(self.detector(pages), pages):
-            polys = self._merge_overlapping_polys(self._normalize_polys(page_polys))
-            h, w = page.shape[:2]
-            masks.append(build_mask((h, w), polys))
-            pages_polys.append(polys)
-        return masks, pages_polys
+        inpainted_pil = Image.fromarray(inpainted)
+        return self.renderer.render_page(
+            inpainted_pil, bboxes, styles, translated_texts
+        )
+
+    def _build_mask(self, page: np.ndarray) -> tuple[np.ndarray, list[np.ndarray]]:
+        page_polys = next(self.detector([page]))
+        polys = self._merge_overlapping_polys(self._normalize_polys(page_polys))
+        h, w = page.shape[:2]
+        return build_mask((h, w), polys), polys
 
     def _get_text_bboxes(
         self, page: np.ndarray, polys: list[np.ndarray]
