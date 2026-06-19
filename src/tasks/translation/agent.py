@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import os
+
 from langchain_classic.agents import AgentExecutor, create_tool_calling_agent
 from langchain_core.messages import SystemMessage
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
@@ -67,7 +69,7 @@ class TranslationAgent:
 
     def __init__(
         self,
-        mistral_api_key: str,
+        mistral_api_key: str | None = None,
         target_language: str = "russian",
         source_language: str | None = None,
         model: str = "mistral-large-latest",
@@ -76,10 +78,18 @@ class TranslationAgent:
         self.target_language = target_language
         self.source_language = source_language
 
+        api_key = mistral_api_key or os.getenv("MISTRAL_API_KEY")
+        if not api_key:
+            raise ValueError(
+                "Missing Mistral API key. Pass mistral_api_key or set MISTRAL_API_KEY."
+            )
+
         llm = ChatMistralAI(
-            name=model,
+            model_name=model,
             temperature=temperature,
-            api_key=mistral_api_key,
+            api_key=api_key,
+            disable_streaming="tool_calling",
+            streaming=False,
         )
 
         tools = [translate_texts, detect_language]
@@ -106,8 +116,7 @@ class TranslationAgent:
         if not texts:
             return []
 
-        non_empty = [t for t in texts]
-        result = self._run_agent(non_empty)
+        result = self._run_agent(texts)
         return result
 
     def _build_user_message(self, texts: list[str]) -> str:
